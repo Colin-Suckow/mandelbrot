@@ -3,9 +3,9 @@ use winit::{dpi::LogicalSize, event::{Event, VirtualKeyCode}, event_loop::{Contr
 use winit_input_helper::WinitInputHelper;
 use interpolation::lerp;
 
-const WIDTH: usize = 640;
-const HEIGHT: usize = 480;
-const MAX_ITERATIONS: f64 = 1000.0;
+const WIDTH: usize = 1920;
+const HEIGHT: usize = 1080;
+const MAX_ITERATIONS: f64 = 32.0;
 
 #[derive(Debug)]
 struct Color {
@@ -37,20 +37,24 @@ impl Color {
 }
 
 struct Palette {
-    colors: Vec<Color>
+    colors: Vec<Color>,
+    max_color: Color,
 }
 
 impl Palette {
     fn generate(size: usize) -> Self {
         let mut colors = Vec::with_capacity(size);
         for index in 0..size {
-            colors.push(Color::new(0, 0, {
-                lerp(&(0 as u8), &(0xFF as u8), &(index as f32 / size as f32))
-            }));
+            colors.push(Color::new(
+                lerp(&(0x0 as u8), &(0xFF as u8), &(index as f32 / size as f32)),
+                lerp(&(0x0 as u8), &(0xFF as u8), &(index as f32 / size as f32)),
+                lerp(&(0x55 as u8), &(0xFF as u8), &(index as f32 / size as f32)),
+            ));
         }
 
         Self {
-            colors
+            colors,
+            max_color: Color::new(0, 0, 0)
         }
     }
 
@@ -73,6 +77,7 @@ fn main() {
 
         set.push(mandelbrot_calculate_point(x0, y0, &palette));
     }
+
 
     let event_loop = EventLoop::new();
     let mut input = WinitInputHelper::new();
@@ -141,9 +146,8 @@ fn mandelbrot_calculate_point(x0: f64, y0: f64, palette: &Palette) -> Color {
     let mut y: f64 = 0.0;
     let mut iteration: f64 = 0.0;
 
-    let mut xtemp: f64 = 0.0;
-    while x*x + y*y <= 65000 as f64 && iteration < MAX_ITERATIONS {
-        xtemp = x*x - y*y + x0;
+    while (x*x + y*y) as u64 <= 2^32 && iteration < MAX_ITERATIONS {
+        let xtemp = x*x - y*y + x0;
         y = 2.0*x*y + y0;
         x = xtemp;
         iteration += 1.0;
@@ -154,8 +158,13 @@ fn mandelbrot_calculate_point(x0: f64, y0: f64, palette: &Palette) -> Color {
         let nu = (log_zn / (2.0 as f64).log2()).log2() / (2.0 as f64).log2();
         iteration = iteration + 1.0 - nu;
     }
-    
-    let c1 = palette.get_color((iteration as usize).min((MAX_ITERATIONS as usize) - 1));
+
+    let c1 = if iteration >= MAX_ITERATIONS {
+        &palette.max_color
+    } else {
+        palette.get_color(((iteration as usize)).min((MAX_ITERATIONS as usize) - 1))
+    };
     let c2 = palette.get_color(((iteration as usize) + 1).min((MAX_ITERATIONS as usize) - 1));
+    
     c1.interpolate(c2, iteration.fract() as f32)
 }
