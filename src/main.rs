@@ -142,7 +142,7 @@ fn mandelbrot_calculate_point(x0: f64, y0: f64, palette: &Palette) -> Color {
     let mut iteration: f64 = 0.0;
 
     let mut xtemp: f64 = 0.0;
-    while x*x + y*y <= (2^8) as f64 && iteration < MAX_ITERATIONS {
+    while x*x + y*y <= 65000 as f64 && iteration < MAX_ITERATIONS {
         xtemp = x*x - y*y + x0;
         y = 2.0*x*y + y0;
         x = xtemp;
