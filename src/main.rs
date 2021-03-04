@@ -3,8 +3,8 @@ use winit::{dpi::LogicalSize, event::{Event, VirtualKeyCode}, event_loop::{Contr
 use winit_input_helper::WinitInputHelper;
 use interpolation::lerp;
 
-const WIDTH: usize = 320;
-const HEIGHT: usize = 240;
+const WIDTH: usize = 640;
+const HEIGHT: usize = 480;
 const MAX_ITERATIONS: f64 = 1000.0;
 
 #[derive(Debug)]
@@ -66,10 +66,11 @@ fn main() {
 
     for index in 0..(WIDTH * HEIGHT) {
         let x = index % WIDTH;
-        let y = index / HEIGHT;
+        let y = index / WIDTH;
 
         let x0 = (((1.0 - -2.5) * x as f64) / WIDTH as f64) + -2.5;
         let y0 = (((1.0 - -1.0) * y as f64) / HEIGHT as f64) + -1.0;
+
         set.push(mandelbrot_calculate_point(x0, y0, &palette));
     }
 
@@ -95,11 +96,8 @@ fn main() {
         if let Event::RedrawRequested(_) = event {
             let frame = pixels.get_frame();
             
-            for index in (0..(WIDTH * HEIGHT)).step_by(4) {
-                frame[index] = set[index].red;
-                frame[index + 1] = set[index].green;
-                frame[index + 2] = set[index]. blue;
-                frame[index + 3] = 0xFF;
+            for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+                pixel.copy_from_slice(&set[i].as_slice());
             }
 
             if pixels
