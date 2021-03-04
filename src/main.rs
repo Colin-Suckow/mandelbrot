@@ -1,9 +1,18 @@
 use std::{path::Path, time::SystemTime};
 use interpolation::lerp;
 
-const WIDTH: usize = 3840;
-const HEIGHT: usize = 2160;
+const WIDTH: usize = 256 * 10;
+const HEIGHT: usize = 144 * 10;
 const MAX_ITERATIONS: f64 = 1000.0;
+
+const MIN_X: f64 = -2.5;
+const MAX_X: f64 = 1.0;
+const MIN_Y: f64 = -1.0;
+const MAX_Y: f64 = 1.0;
+
+const ZOOM_FACTOR: f64 = 7.0;
+const OFFSET_X: f64 = -3.5;
+const OFFSET_Y: f64 = -2.5;
 
 fn main() {
 
@@ -17,8 +26,8 @@ fn main() {
         let x = index % WIDTH;
         let y = index / WIDTH;
 
-        let x0 = (((1.0 - -2.5) * x as f64) / WIDTH as f64) + -2.5;
-        let y0 = (((1.0 - -1.0) * y as f64) / HEIGHT as f64) + -1.0;
+        let x0 = (((((MAX_X + OFFSET_X) / ZOOM_FACTOR) - ((MIN_X + OFFSET_X) / ZOOM_FACTOR)) * x as f64) / WIDTH as f64) + ((MIN_X + OFFSET_X) / ZOOM_FACTOR);
+        let y0 = (((((MAX_Y + OFFSET_Y) / ZOOM_FACTOR) - ((MIN_Y + OFFSET_Y) / ZOOM_FACTOR)) * y as f64) / HEIGHT as f64) + ((MIN_Y + OFFSET_Y) / ZOOM_FACTOR);
 
         set.push(mandelbrot_calculate_point(x0, y0, &palette));
     }
